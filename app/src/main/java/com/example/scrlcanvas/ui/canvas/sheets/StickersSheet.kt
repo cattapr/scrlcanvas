@@ -90,7 +90,7 @@ fun StickersSheet(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            overlayItems(overlay.items)
+                            overlayItems(overlay.items, onEvent)
                         }
                     }
                 }
@@ -100,7 +100,7 @@ fun StickersSheet(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
 }
 
 
-private fun LazyGridScope.overlayItems(overlayItems: List<OverlayItem>) {
+private fun LazyGridScope.overlayItems(overlayItems: List<OverlayItem>, onEvent: (CanvasUiEvent) -> Unit) {
     items(overlayItems) { item ->
         AsyncImage(
             model = item.source_url,
@@ -109,7 +109,10 @@ private fun LazyGridScope.overlayItems(overlayItems: List<OverlayItem>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
-                .background(Color.LightGray),
+                .background(Color.LightGray)
+                .clickable {
+                    onEvent(CanvasUiEvent.OnOverlaySelected(item))
+                }
         )
     }
 }
