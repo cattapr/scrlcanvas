@@ -15,33 +15,14 @@ fun snapIndicator(
     threshold: Float,
     allItems: List<PlacedCanvasItem>
 ): SnapResult {
-    val snapLines = mutableListOf<SnapLine>()
-
-    val snapToCanvasEdges = snapToCanvasEdges(position, threshold, canvasSize, itemSize, snapLines)
-    val snappingFinalPosition = snapToOtherCanvasItems(
-        snapToCanvasEdges,
-        threshold,
-        canvasSize,
-        itemSize,
-        allItems,
-        snapLines
-    )
-
-    return SnapResult(snappingFinalPosition, snapLines)
-}
-
-private fun snapToCanvasEdges(
-    position: Offset,
-    threshold: Float,
-    canvasSize: Size,
-    itemSize: Size,
-    snapLines: MutableList<SnapLine>
-): Offset {
     var snappedX = position.x
     var snappedY = position.y
+    val snapLines = mutableListOf<SnapLine>()
 
     val itemWidth = itemSize.width
     val itemHeight = itemSize.height
+
+    // Snap to canvas edges
     snapToLeftEdge(position, threshold, canvasSize, {
         snappedX = 0f
     }, snapLines)
@@ -70,26 +51,13 @@ private fun snapToCanvasEdges(
         snappedX = it
     }, snapLines)
 
-    return Offset(snappedX, snappedY)
-}
-
-private fun snapToOtherCanvasItems(
-    position: Offset,
-    threshold: Float,
-    canvasSize: Size,
-    itemSize: Size,
-    allItems: List<PlacedCanvasItem>,
-    snapLines: MutableList<SnapLine>
-): Offset {
-    var snappedX = position.x
-    var snappedY = position.y
-
+    // snap to other items edges
     snapToOtherItems(position, itemSize, allItems, threshold, canvasSize, {
         snappedX = it.x
         snappedY = it.y
     }, snapLines)
 
-    return Offset(snappedX, snappedY)
+    return SnapResult(Offset(snappedX, snappedY), snapLines)
 }
 
 private fun snapToLeftEdge(
@@ -309,5 +277,4 @@ private fun snapToOtherItems(
             null -> {}
         }
     }
-
 }
