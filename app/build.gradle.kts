@@ -60,13 +60,16 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     //Dagger - Hilt
-    implementation("com.google.dagger:hilt-android:2.51")
-    kapt("com.google.dagger:hilt-compiler:2.51")
+    implementation("com.google.dagger:hilt-android:2.55")
+    kapt("com.google.dagger:hilt-compiler:2.55")
 
     // Activity KTX for viewModels()
-    implementation("androidx.activity:activity-ktx:1.1.0")
+    implementation("androidx.activity:activity-ktx:1.10.1")
 
     // Retrofit and GsonAdd commentMore actions
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+    // Coil for Async images
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }
