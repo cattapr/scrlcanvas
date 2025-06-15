@@ -9,10 +9,10 @@ sealed class CanvasUiEvent {
     data object OnToggleSheet : CanvasUiEvent()
     data class OnSetOverlayCategory(val category: OverlayCategory) : CanvasUiEvent()
     data class OnOverlaySelected(val overlay: OverlayItem) : CanvasUiEvent()
-    data class OnCanvasOverlayTapped(val id: Int) : CanvasUiEvent()
+    data class OnCanvasOverlayTapped(val id: String) : CanvasUiEvent()
     data object OnDeselectCanvasOverlays : CanvasUiEvent()
     data class OnCanvasOverlayPositionChange(
-        val id: Int,
+        val id: String,
         val dragAmount: Offset,
         val canvasSize: Size,
         val itemSize: Size

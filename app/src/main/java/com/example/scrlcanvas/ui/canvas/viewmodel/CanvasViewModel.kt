@@ -45,7 +45,7 @@ constructor(
     }
 
     private fun handleCanvasOverlayPositionChange(
-        id: Int,
+        id: String,
         dragAmount: Offset,
         canvasSize: Size,
         itemSize: Size
@@ -54,7 +54,7 @@ constructor(
 
         _state.update {
             val updatedOverlays = it.selectedOverlays.map { item ->
-                if (item.overlay.id == id) {
+                if (item.id == id) {
                     val newPosition = item.position + dragAmount
                     val snappedResult = snapIndicator(
                         newPosition,
@@ -88,10 +88,10 @@ constructor(
         }
     }
 
-    private fun handleOverlyTapped(id: Int) {
+    private fun handleOverlyTapped(id: String) {
         _state.update {
             it.copy(selectedOverlays = state.value.selectedOverlays.map { item ->
-                item.copy(isSelected = item.overlay.id == id)
+                item.copy(isSelected = item.id == id)
             })
         }
     }

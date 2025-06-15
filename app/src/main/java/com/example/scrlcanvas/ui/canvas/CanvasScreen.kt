@@ -208,7 +208,7 @@ private fun DraggableOverlayItem(
                         imageSize?.let {
                             currentOnEvent(
                                 CanvasUiEvent.OnCanvasOverlayPositionChange(
-                                    placedItem.overlay.id,
+                                    placedItem.id,
                                     dragAmount,
                                     canvasSizePx,
                                     it
@@ -220,7 +220,7 @@ private fun DraggableOverlayItem(
             }
             .pointerInput(placedItem.overlay.id) {
                 detectTapGestures {
-                    currentOnEvent(CanvasUiEvent.OnCanvasOverlayTapped(placedItem.overlay.id))
+                    currentOnEvent(CanvasUiEvent.OnCanvasOverlayTapped(placedItem.id))
                 }
             }
             .border(
