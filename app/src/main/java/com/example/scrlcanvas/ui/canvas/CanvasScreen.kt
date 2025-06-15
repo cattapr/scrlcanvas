@@ -24,7 +24,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -32,11 +35,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.scrlcanvas.ui.canvas.model.PlacedCanvasItem
 import com.example.scrlcanvas.ui.canvas.sheets.StickersSheet
 import com.example.scrlcanvas.ui.canvas.state.CanvasUiState
@@ -150,19 +155,34 @@ private fun DraggableOverlayItem(
     val canvasSizePx = with(density) {
         Size(canvasWidth.toPx(), canvasHeight.toPx())
     }
-    val itemSizePx = with(density) {
-        Size(100.dp.toPx(), 50.dp.toPx())
-    }
 
+    var imageSize by remember { mutableStateOf<Size?>(null) }
     val offset = placedItem.position
     val currentOnEvent by rememberUpdatedState(onEvent)
 
     AsyncImage(
-        model = placedItem.overlay.source_url,
+        model = ImageRequest.Builder(LocalContext.current)
+            .data(placedItem.overlay.source_url)
+            .crossfade(true)
+            .build(),
         contentDescription = placedItem.overlay.overlay_name,
         contentScale = ContentScale.Fit,
+        onSuccess = { success ->
+            val width = success.result.drawable.intrinsicWidth
+            val height = success.result.drawable.intrinsicHeight
+            imageSize = with(density) { Size(width.toDp().toPx(), height.toDp().toPx()) }
+        },
         modifier = Modifier
-            .size(100.dp, 50.dp)
+            .then(
+                if (imageSize != null) {
+                    Modifier.size(
+                        with(density) { imageSize!!.width.toDp() },
+                        with(density) { imageSize!!.height.toDp() }
+                    )
+                } else {
+                    Modifier.size(50.dp) // fallback size while loading
+                }
+            )
             .graphicsLayer {
                 translationX = offset.x
                 translationY = offset.y
@@ -171,14 +191,16 @@ private fun DraggableOverlayItem(
                 if (placedItem.isSelected) {
                     detectDragGestures { change, dragAmount ->
                         change.consume()
-                        currentOnEvent(
-                            CanvasUiEvent.OnCanvasOverlayPositionChange(
-                                placedItem.overlay.id,
-                                dragAmount,
-                                canvasSizePx,
-                                itemSizePx
+                        imageSize?.let {
+                            currentOnEvent(
+                                CanvasUiEvent.OnCanvasOverlayPositionChange(
+                                    placedItem.overlay.id,
+                                    dragAmount,
+                                    canvasSizePx,
+                                    it
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }
@@ -193,6 +215,7 @@ private fun DraggableOverlayItem(
             )
     )
 }
+
 
 
 @Preview(showBackground = true)
