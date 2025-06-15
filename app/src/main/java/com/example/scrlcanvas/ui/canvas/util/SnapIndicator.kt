@@ -15,14 +15,33 @@ fun snapIndicator(
     threshold: Float,
     allItems: List<PlacedCanvasItem>
 ): SnapResult {
+    val snapLines = mutableListOf<SnapLine>()
+
+    val snapToCanvasEdges = snapToCanvasEdges(position, threshold, canvasSize, itemSize, snapLines)
+    val snappingFinalPosition = snapToOtherCanvasItems(
+        snapToCanvasEdges,
+        threshold,
+        canvasSize,
+        itemSize,
+        allItems,
+        snapLines
+    )
+
+    return SnapResult(snappingFinalPosition, snapLines)
+}
+
+private fun snapToCanvasEdges(
+    position: Offset,
+    threshold: Float,
+    canvasSize: Size,
+    itemSize: Size,
+    snapLines: MutableList<SnapLine>
+): Offset {
     var snappedX = position.x
     var snappedY = position.y
-    val snapLines = mutableListOf<SnapLine>()
 
     val itemWidth = itemSize.width
     val itemHeight = itemSize.height
-
-    // Snap to canvas edges
     snapToLeftEdge(position, threshold, canvasSize, {
         snappedX = 0f
     }, snapLines)
@@ -51,12 +70,26 @@ fun snapIndicator(
         snappedX = it
     }, snapLines)
 
+    return Offset(snappedX, snappedY)
+}
+
+private fun snapToOtherCanvasItems(
+    position: Offset,
+    threshold: Float,
+    canvasSize: Size,
+    itemSize: Size,
+    allItems: List<PlacedCanvasItem>,
+    snapLines: MutableList<SnapLine>
+): Offset {
+    var snappedX = position.x
+    var snappedY = position.y
+
     snapToOtherItems(position, itemSize, allItems, threshold, canvasSize, {
         snappedX = it.x
         snappedY = it.y
     }, snapLines)
 
-    return SnapResult(Offset(snappedX, snappedY), snapLines)
+    return Offset(snappedX, snappedY)
 }
 
 private fun snapToLeftEdge(
@@ -241,19 +274,32 @@ private fun snapToOtherItems(
         when (snapDirection) {
             SnapEdge.LEFT_TO_RIGHT -> {
                 onSnap(Offset(otherRight, position.y))
-                snapLines.add(SnapLine(Offset(otherRight, 0f), Offset(otherRight, canvasSize.height)))
+                snapLines.add(
+                    SnapLine(
+                        Offset(otherRight, 0f),
+                        Offset(otherRight, canvasSize.height)
+                    )
+                )
                 return
             }
+
             SnapEdge.RIGHT_TO_LEFT -> {
                 onSnap(Offset(otherLeft - itemSize.width, position.y))
                 snapLines.add(SnapLine(Offset(otherLeft, 0f), Offset(otherLeft, canvasSize.height)))
                 return
             }
+
             SnapEdge.TOP_TO_BOTTOM -> {
                 onSnap(Offset(position.x, otherBottom))
-                snapLines.add(SnapLine(Offset(0f, otherBottom), Offset(canvasSize.width, otherBottom)))
+                snapLines.add(
+                    SnapLine(
+                        Offset(0f, otherBottom),
+                        Offset(canvasSize.width, otherBottom)
+                    )
+                )
                 return
             }
+
             SnapEdge.BOTTOM_TO_TOP -> {
                 onSnap(Offset(position.x, otherTop - itemSize.height))
                 snapLines.add(SnapLine(Offset(0f, otherTop), Offset(canvasSize.width, otherTop)))
