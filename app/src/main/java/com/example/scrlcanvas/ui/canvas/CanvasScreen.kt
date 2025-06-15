@@ -127,18 +127,20 @@ private fun DraggableOverlayItem(
                     placedItem.position.y.roundToInt()
                 )
             }
-            .pointerInput(placedItem.overlay.id) {
-                detectDragGestures(
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        onEvent(
-                            CanvasUiEvent.OnCanvasOverlayPositionChange(
-                                placedItem.overlay.id,
-                                dragAmount
+            .pointerInput(placedItem.overlay.id to placedItem.isSelected) {
+                if (placedItem.isSelected) {
+                    detectDragGestures(
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            onEvent(
+                                CanvasUiEvent.OnCanvasOverlayPositionChange(
+                                    placedItem.overlay.id,
+                                    dragAmount
+                                )
                             )
-                        )
-                    }
-                )
+                        }
+                    )
+                }
             }
             .pointerInput(placedItem.overlay.id) {
                 detectTapGestures(
