@@ -226,10 +226,13 @@ private fun snapToOtherItems(
     val itemBottom = position.y + itemSize.height
 
     for (other in allItems) {
+        val otherSize = other.size ?: continue
+
         val otherLeft = other.position.x
-        val otherRight = other.position.x + itemSize.width
         val otherTop = other.position.y
-        val otherBottom = other.position.y + itemSize.height
+        val otherRight = other.position.x + otherSize.width
+        val otherBottom = other.position.y + otherSize.height
+
 
         val snapDirection = when {
             abs(itemLeft - otherRight) < threshold -> SnapEdge.LEFT_TO_RIGHT

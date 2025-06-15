@@ -41,8 +41,21 @@ constructor(
                 event.canvasSize,
                 event.itemSize
             )
+
+            is CanvasUiEvent.OnCanvasOverlaySizeKnown -> updateItemSize(event.itemId, event.size)
         }
     }
+
+    private fun updateItemSize(itemId: String, newSize: Size) {
+        _state.update {
+            it.copy(
+                selectedOverlays = it.selectedOverlays.map { item ->
+                    if (item.id == itemId) item.copy(size = newSize) else item
+                }
+            )
+        }
+    }
+
 
     private fun handleCanvasOverlayPositionChange(
         id: String,

@@ -185,6 +185,7 @@ private fun DraggableOverlayItem(
             val width = success.result.drawable.intrinsicWidth
             val height = success.result.drawable.intrinsicHeight
             imageSize = with(density) { Size(width.toDp().toPx(), height.toDp().toPx()) }
+            onEvent(CanvasUiEvent.OnCanvasOverlaySizeKnown(placedItem.id, imageSize!!))
         },
         modifier = Modifier
             .then(

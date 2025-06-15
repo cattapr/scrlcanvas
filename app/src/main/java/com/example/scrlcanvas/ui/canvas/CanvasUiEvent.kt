@@ -17,4 +17,9 @@ sealed class CanvasUiEvent {
         val canvasSize: Size,
         val itemSize: Size
     ) : CanvasUiEvent()
+
+    data class OnCanvasOverlaySizeKnown(
+        val itemId: String,
+        val size: Size
+    ) : CanvasUiEvent()
 }
