@@ -25,9 +25,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -85,11 +90,33 @@ fun CanvasScreen(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
                             .matchParentSize()
                             .background(Color.White)
                     ) {
-                        //TODO: Draw vertical dividers and snapping lines
+                        val sectionWidth = size.width / 3
+
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(sectionWidth, 0f),
+                            end = Offset(sectionWidth, size.height),
+                            strokeWidth = 4f
+                        )
+                        drawLine(
+                            color = Color.Black,
+                            start = Offset(sectionWidth * 2, 0f),
+                            end = Offset(sectionWidth * 2, size.height),
+                            strokeWidth = 4f
+                        )
+
+                        state.snapLines.forEach { line ->
+                            drawLine(
+                                color = Color.Yellow,
+                                start = line.start,
+                                end = line.end,
+                                strokeWidth = 4f
+                            )
+                        }
                     }
 
 
-                    Overlays(state, onEvent)
+                    Overlays(state, canvasWidth, canvasHeight, onEvent)
                 }
             }
 
@@ -102,25 +129,39 @@ fun CanvasScreen(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
 @Composable
 fun Overlays(
     state: CanvasUiState,
+    canvasWidth: Dp,
+    canvasHeight: Dp,
     onEvent: (CanvasUiEvent) -> Unit
 ) {
     state.selectedOverlays.forEach { placedItem ->
-        DraggableOverlayItem(placedItem, onEvent)
+        DraggableOverlayItem(placedItem, canvasWidth, canvasHeight, onEvent)
     }
 }
+
 
 @Composable
 private fun DraggableOverlayItem(
     placedItem: PlacedCanvasItem,
+    canvasWidth: Dp,
+    canvasHeight: Dp,
     onEvent: (CanvasUiEvent) -> Unit
 ) {
-    val imageSize = 100.dp
+    val imageWith = 100.dp
+    val imageHeight = 50.dp
+    val density = LocalDensity.current
+    val canvasSizePx = with(density) {
+        Size(canvasWidth.toPx(), canvasHeight.toPx())
+    }
+    val itemSizePx = with(density) {
+        Size(imageWith.toPx(), imageHeight.toPx())
+    }
 
     AsyncImage(
         model = placedItem.overlay.source_url,
         contentDescription = placedItem.overlay.overlay_name,
+        contentScale = ContentScale.Fit,
         modifier = Modifier
-            .size(imageSize)
+            .size(imageWith, imageHeight)
             .offset {
                 IntOffset(
                     placedItem.position.x.roundToInt(),
@@ -135,7 +176,9 @@ private fun DraggableOverlayItem(
                             onEvent(
                                 CanvasUiEvent.OnCanvasOverlayPositionChange(
                                     placedItem.overlay.id,
-                                    dragAmount
+                                    dragAmount,
+                                    canvasSizePx,
+                                    itemSizePx
                                 )
                             )
                         }

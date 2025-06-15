@@ -3,6 +3,7 @@ package com.example.scrlcanvas.ui.canvas.state
 import com.example.scrlcanvas.data.model.OverlayCategory
 import com.example.scrlcanvas.domain.model.OverlaysDataResponse
 import com.example.scrlcanvas.ui.canvas.model.PlacedCanvasItem
+import com.example.scrlcanvas.ui.canvas.model.SnapLine
 
 data class CanvasUiState(
     val showBottomSheet: Boolean = false,
@@ -11,4 +12,5 @@ data class CanvasUiState(
     val overlays: OverlaysDataResponse? = null,
     val selectedCategory: OverlayCategory? = null,
     val selectedOverlays: List<PlacedCanvasItem> = emptyList(),
+    val snapLines: List<SnapLine> = emptyList()
 )

@@ -1,6 +1,7 @@
 package com.example.scrlcanvas.ui.canvas.viewmodel
 
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scrlcanvas.data.model.OverlayCategory
@@ -8,7 +9,9 @@ import com.example.scrlcanvas.data.model.OverlayItem
 import com.example.scrlcanvas.domain.usecases.IOverlaysUseCases
 import com.example.scrlcanvas.ui.canvas.CanvasUiEvent
 import com.example.scrlcanvas.ui.canvas.model.PlacedCanvasItem
+import com.example.scrlcanvas.ui.canvas.model.SnapLine
 import com.example.scrlcanvas.ui.canvas.state.CanvasUiState
+import com.example.scrlcanvas.ui.canvas.util.snapIndicator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,22 +37,42 @@ constructor(
             is CanvasUiEvent.OnDeselectCanvasOverlays -> handleDeselectOverlays()
             is CanvasUiEvent.OnCanvasOverlayPositionChange -> handleCanvasOverlayPositionChange(
                 event.id,
-                event.dragAmount
+                event.dragAmount,
+                event.canvasSize,
+                event.itemSize
             )
         }
     }
 
     private fun handleCanvasOverlayPositionChange(
         id: Int,
-        dragAmount: Offset
+        dragAmount: Offset,
+        canvasSize: Size,
+        itemSize: Size
     ) {
+        var newSnapLines = emptyList<SnapLine>()
+
         _state.update {
+            val updatedOverlays = it.selectedOverlays.map { item ->
+                if (item.overlay.id == id) {
+                    val newPosition = item.position + dragAmount
+                    val snappedResult = snapIndicator(
+                        newPosition,
+                        itemSize = itemSize,
+                        canvasSize = canvasSize,
+                        threshold = 10f
+                    )
+
+                    newSnapLines = snappedResult.lines
+
+                    item.copy(position = snappedResult.position)
+                } else item
+
+            }
+
             it.copy(
-                selectedOverlays = it.selectedOverlays.map { item ->
-                    if (item.overlay.id == id) {
-                        item.copy(position = item.position + dragAmount)
-                    } else item
-                }
+                selectedOverlays = updatedOverlays,
+                snapLines = newSnapLines
             )
         }
     }
