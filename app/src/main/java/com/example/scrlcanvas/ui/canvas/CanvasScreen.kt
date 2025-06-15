@@ -1,7 +1,5 @@
 package com.example.scrlcanvas.ui.canvas
 
-import androidx.compose.animation.core.animateOffsetAsState
-import androidx.compose.animation.core.snap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -14,7 +12,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,22 +24,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.scrlcanvas.ui.canvas.model.PlacedCanvasItem
 import com.example.scrlcanvas.ui.canvas.sheets.StickersSheet
 import com.example.scrlcanvas.ui.canvas.state.CanvasUiState
-import kotlin.math.roundToInt
 
 @Composable
 fun CanvasScreen(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
@@ -149,57 +146,46 @@ private fun DraggableOverlayItem(
     canvasHeight: Dp,
     onEvent: (CanvasUiEvent) -> Unit
 ) {
-    val imageWith = 100.dp
-    val imageHeight = 50.dp
     val density = LocalDensity.current
     val canvasSizePx = with(density) {
         Size(canvasWidth.toPx(), canvasHeight.toPx())
     }
     val itemSizePx = with(density) {
-        Size(imageWith.toPx(), imageHeight.toPx())
+        Size(100.dp.toPx(), 50.dp.toPx())
     }
 
-    val targetOffset = placedItem.position
-    val animatedOffset by animateOffsetAsState(
-        targetValue = targetOffset,
-        animationSpec = snap()
-    )
+    val offset = placedItem.position
+    val currentOnEvent by rememberUpdatedState(onEvent)
 
     AsyncImage(
         model = placedItem.overlay.source_url,
         contentDescription = placedItem.overlay.overlay_name,
         contentScale = ContentScale.Fit,
         modifier = Modifier
-            .size(imageWith, imageHeight)
-            .offset {
-                IntOffset(
-                    animatedOffset.x.roundToInt(),
-                    animatedOffset.y.roundToInt()
-                )
+            .size(100.dp, 50.dp)
+            .graphicsLayer {
+                translationX = offset.x
+                translationY = offset.y
             }
             .pointerInput(placedItem.overlay.id to placedItem.isSelected) {
                 if (placedItem.isSelected) {
-                    detectDragGestures(
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            onEvent(
-                                CanvasUiEvent.OnCanvasOverlayPositionChange(
-                                    placedItem.overlay.id,
-                                    dragAmount,
-                                    canvasSizePx,
-                                    itemSizePx
-                                )
+                    detectDragGestures { change, dragAmount ->
+                        change.consume()
+                        currentOnEvent(
+                            CanvasUiEvent.OnCanvasOverlayPositionChange(
+                                placedItem.overlay.id,
+                                dragAmount,
+                                canvasSizePx,
+                                itemSizePx
                             )
-                        }
-                    )
+                        )
+                    }
                 }
             }
             .pointerInput(placedItem.overlay.id) {
-                detectTapGestures(
-                    onTap = {
-                        onEvent(CanvasUiEvent.OnCanvasOverlayTapped(placedItem.overlay.id))
-                    }
-                )
+                detectTapGestures {
+                    currentOnEvent(CanvasUiEvent.OnCanvasOverlayTapped(placedItem.overlay.id))
+                }
             }
             .border(
                 width = if (placedItem.isSelected) 2.dp else 0.dp,
@@ -207,6 +193,7 @@ private fun DraggableOverlayItem(
             )
     )
 }
+
 
 @Preview(showBackground = true)
 @Composable
