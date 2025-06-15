@@ -2,6 +2,8 @@ package com.example.scrlcanvas.ui.canvas
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -59,6 +62,13 @@ fun CanvasView(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
                     .horizontalScroll(scrollState)
                     .padding(horizontal = if (hasScrolled) 0.dp else initialHorizontalPadding)
                     .height(canvasHeight)
+                    .pointerInput(Unit) {
+                        detectTapGestures(
+                            onTap = {
+                                onEvent(CanvasUiEvent.OnDeselectCanvasOverlays)
+                            }
+                        )
+                    }
             ) {
                 Box(
                     modifier = Modifier
@@ -75,7 +85,7 @@ fun CanvasView(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
                     }
 
 
-                    Overlays(state)
+                    Overlays(state, onEvent)
                 }
             }
 
@@ -87,16 +97,18 @@ fun CanvasView(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
 
 @Composable
 fun Overlays(
-    state: CanvasUiState
+    state: CanvasUiState,
+    onEvent: (CanvasUiEvent) -> Unit
 ) {
     state.selectedOverlays.forEach { placedItem ->
-        DraggableOverlayItem(placedItem)
+        DraggableOverlayItem(placedItem, onEvent)
     }
 }
 
 @Composable
 private fun DraggableOverlayItem(
-    placedItem: PlacedCanvasItem
+    placedItem: PlacedCanvasItem,
+    onEvent: (CanvasUiEvent) -> Unit
 ) {
     val imageSize = 100.dp
 
@@ -105,6 +117,17 @@ private fun DraggableOverlayItem(
         contentDescription = placedItem.overlay.overlay_name,
         modifier = Modifier
             .size(imageSize)
+            .pointerInput(placedItem.overlay.id) {
+                detectTapGestures(
+                    onTap = {
+                        onEvent(CanvasUiEvent.OnCanvasOverlayTapped(placedItem.overlay.id))
+                    }
+                )
+            }
+            .border(
+                width = if (placedItem.isSelected) 2.dp else 0.dp,
+                color = if (placedItem.isSelected) Color.Green else Color.Transparent
+            )
     )
 }
 

@@ -29,6 +29,26 @@ constructor(
             CanvasUiEvent.OnToggleSheet -> toggleSheet()
             is CanvasUiEvent.OnSetOverlayCategory -> setOverlayCategory(event.category)
             is CanvasUiEvent.OnOverlaySelected -> addOverlayToCanvas(event.overlay)
+            is CanvasUiEvent.OnCanvasOverlayTapped -> handleOverlyTapped(event.id)
+            is CanvasUiEvent.OnDeselectCanvasOverlays -> handleDeselectOverlays()
+        }
+    }
+
+    private fun handleDeselectOverlays() {
+        _state.update {
+            it.copy(
+                selectedOverlays = it.selectedOverlays.map { item ->
+                    item.copy(isSelected = false)
+                }
+            )
+        }
+    }
+
+    private fun handleOverlyTapped(id: Int) {
+        _state.update {
+            it.copy(selectedOverlays = state.value.selectedOverlays.map { item ->
+                item.copy(isSelected = item.overlay.id == id)
+            })
         }
     }
 
