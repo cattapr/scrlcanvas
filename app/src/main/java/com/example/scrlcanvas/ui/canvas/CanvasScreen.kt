@@ -84,48 +84,62 @@ fun CanvasScreen(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
                         )
                     }
             ) {
-                Box(
-                    modifier = Modifier
-                        .width(canvasWidth)
-                        .height(canvasHeight)
-
-                ) {
-                    Canvas(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .background(Color.White)
-                    ) {
-                        val sectionWidth = size.width / 3
-
-                        drawLine(
-                            color = Color.Black,
-                            start = Offset(sectionWidth, 0f),
-                            end = Offset(sectionWidth, size.height),
-                            strokeWidth = 4f
-                        )
-                        drawLine(
-                            color = Color.Black,
-                            start = Offset(sectionWidth * 2, 0f),
-                            end = Offset(sectionWidth * 2, size.height),
-                            strokeWidth = 4f
-                        )
-
-                        state.snapLines.forEach { line ->
-                            drawLine(
-                                color = Color.Yellow,
-                                start = line.start,
-                                end = line.end,
-                                strokeWidth = 4f
-                            )
-                        }
-                    }
-
-
-                    Overlays(state, canvasWidth, canvasHeight, onEvent)
-                }
+                CanvasView(state, canvasWidth, canvasHeight, onEvent)
             }
 
             StickersSheet(state, onEvent)
+        }
+    }
+}
+
+@Composable
+private fun CanvasView(
+    state: CanvasUiState,
+    canvasWidth: Dp,
+    canvasHeight: Dp,
+    onEvent: (CanvasUiEvent) -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .width(canvasWidth)
+            .height(canvasHeight)
+    ) {
+        // Canvas horizontal default lines
+        Canvas(
+            modifier = Modifier
+                .matchParentSize()
+                .background(Color.White)
+        ) {
+            val sectionWidth = size.width / 3
+
+            drawLine(
+                color = Color.Black,
+                start = Offset(sectionWidth, 0f),
+                end = Offset(sectionWidth, size.height),
+                strokeWidth = 2f
+            )
+            drawLine(
+                color = Color.Black,
+                start = Offset(sectionWidth * 2, 0f),
+                end = Offset(sectionWidth * 2, size.height),
+                strokeWidth = 2f
+            )
+        }
+
+        Overlays(state, canvasWidth, canvasHeight, onEvent)
+
+        // Snap lines (drawn above overlays)
+        Canvas(
+            modifier = Modifier.matchParentSize()
+        ) {
+            state.snapLines.forEach { line ->
+                drawLine(
+                    color = Color.Yellow,
+                    start = line.start,
+                    end = line.end,
+                    strokeWidth = 2f
+                )
+            }
         }
     }
 }
@@ -215,7 +229,6 @@ private fun DraggableOverlayItem(
             )
     )
 }
-
 
 
 @Preview(showBackground = true)
