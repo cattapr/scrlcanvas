@@ -1,11 +1,14 @@
 package com.example.scrlcanvas.ui.canvas.sheets
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridScope
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -21,6 +24,7 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -46,11 +50,39 @@ fun StickersSheet(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .fillMaxHeight()
                         .padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    state.overlays?.forEach { overlay ->
-                        Text(text = overlay.title)
+                    LazyRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    ) {
+                        state.overlays?.forEach { category ->
+                            item {
+                                Text(
+                                    text = category.title,
+                                    modifier = Modifier
+                                        .background(
+                                            if (category == state.selectedCategory) MaterialTheme.colorScheme.primary
+                                            else Color.LightGray,
+                                            shape = MaterialTheme.shapes.small
+                                        )
+                                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                                        .clickable {
+                                            onEvent(
+                                                CanvasUiEvent.OnSetOverlayCategory(
+                                                    category
+                                                )
+                                            )
+                                        },
+                                    color = if (category == state.selectedCategory) Color.White else Color.Black
+                                )
+                            }
+                        }
+                    }
+
+                    state.selectedCategory?.let { overlay ->
                         LazyVerticalGrid(
                             columns = GridCells.Fixed(4),
                             modifier = Modifier
@@ -73,8 +105,10 @@ private fun LazyGridScope.overlayItems(overlayItems: List<OverlayItem>) {
         AsyncImage(
             model = item.source_url,
             contentDescription = item.overlay_name,
+            contentScale = ContentScale.Fit,
             modifier = Modifier
-                .size(80.dp)
+                .fillMaxWidth()
+                .aspectRatio(1f)
                 .background(Color.LightGray),
         )
     }

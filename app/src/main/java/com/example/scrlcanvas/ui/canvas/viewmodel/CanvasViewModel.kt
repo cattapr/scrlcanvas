@@ -2,6 +2,7 @@ package com.example.scrlcanvas.ui.canvas.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.scrlcanvas.data.model.OverlayCategory
 import com.example.scrlcanvas.domain.usecases.IOverlaysUseCases
 import com.example.scrlcanvas.ui.canvas.CanvasUiEvent
 import com.example.scrlcanvas.ui.canvas.state.CanvasUiState
@@ -24,7 +25,12 @@ constructor(
     fun onEvent(event: CanvasUiEvent) {
         when (event) {
             CanvasUiEvent.OnToggleSheet -> toggleSheet()
+            is CanvasUiEvent.OnSetOverlayCategory -> setOverlayCategory(event.category)
         }
+    }
+
+    private fun setOverlayCategory(category: OverlayCategory) {
+        _state.update { it.copy(selectedCategory = category) }
     }
 
     private fun toggleSheet() {
@@ -41,7 +47,13 @@ constructor(
             _state.update { it.copy(isLoading = true) }
             overlaysUseCases.getOverlays().fold(
                 onSuccess = { overlays ->
-                    _state.update { it.copy(overlays = overlays, hasError = false) }
+                    _state.update {
+                        it.copy(
+                            overlays = overlays,
+                            selectedCategory = overlays.first(),
+                            hasError = false
+                        )
+                    }
                 },
                 onFailure = {
                     _state.update { it.copy(hasError = false) }
