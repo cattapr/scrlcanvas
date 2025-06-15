@@ -2,15 +2,18 @@ package com.example.scrlcanvas.ui.canvas.util
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import com.example.scrlcanvas.ui.canvas.model.PlacedCanvasItem
 import com.example.scrlcanvas.ui.canvas.model.SnapLine
 import com.example.scrlcanvas.ui.canvas.model.SnapResult
+import com.example.scrlcanvas.ui.canvas.model.enums.SnapEdge
 import kotlin.math.abs
 
 fun snapIndicator(
     position: Offset,
     canvasSize: Size,
     itemSize: Size,
-    threshold: Float
+    threshold: Float,
+    allItems: List<PlacedCanvasItem>
 ): SnapResult {
     var snappedX = position.x
     var snappedY = position.y
@@ -46,6 +49,11 @@ fun snapIndicator(
 
     snapToVerticalCenterOfEachThird(position, itemWidth, threshold, canvasSize, {
         snappedX = it
+    }, snapLines)
+
+    snapToOtherItems(position, itemSize, allItems, threshold, canvasSize, {
+        snappedX = it.x
+        snappedY = it.y
     }, snapLines)
 
     return SnapResult(Offset(snappedX, snappedY), snapLines)
@@ -200,4 +208,60 @@ private fun snapToVerticalCenterOfEachThird(
             return
         }
     }
+}
+
+private fun snapToOtherItems(
+    position: Offset,
+    itemSize: Size,
+    allItems: List<PlacedCanvasItem>,
+    threshold: Float,
+    canvasSize: Size,
+    onSnap: (Offset) -> Unit,
+    snapLines: MutableList<SnapLine>
+) {
+    val itemLeft = position.x
+    val itemRight = position.x + itemSize.width
+    val itemTop = position.y
+    val itemBottom = position.y + itemSize.height
+
+    for (other in allItems) {
+        val otherLeft = other.position.x
+        val otherRight = other.position.x + itemSize.width
+        val otherTop = other.position.y
+        val otherBottom = other.position.y + itemSize.height
+
+        val snapDirection = when {
+            abs(itemLeft - otherRight) < threshold -> SnapEdge.LEFT_TO_RIGHT
+            abs(itemRight - otherLeft) < threshold -> SnapEdge.RIGHT_TO_LEFT
+            abs(itemTop - otherBottom) < threshold -> SnapEdge.TOP_TO_BOTTOM
+            abs(itemBottom - otherTop) < threshold -> SnapEdge.BOTTOM_TO_TOP
+            else -> null
+        }
+
+        when (snapDirection) {
+            SnapEdge.LEFT_TO_RIGHT -> {
+                onSnap(Offset(otherRight, position.y))
+                snapLines.add(SnapLine(Offset(otherRight, 0f), Offset(otherRight, canvasSize.height)))
+                return
+            }
+            SnapEdge.RIGHT_TO_LEFT -> {
+                onSnap(Offset(otherLeft - itemSize.width, position.y))
+                snapLines.add(SnapLine(Offset(otherLeft, 0f), Offset(otherLeft, canvasSize.height)))
+                return
+            }
+            SnapEdge.TOP_TO_BOTTOM -> {
+                onSnap(Offset(position.x, otherBottom))
+                snapLines.add(SnapLine(Offset(0f, otherBottom), Offset(canvasSize.width, otherBottom)))
+                return
+            }
+            SnapEdge.BOTTOM_TO_TOP -> {
+                onSnap(Offset(position.x, otherTop - itemSize.height))
+                snapLines.add(SnapLine(Offset(0f, otherTop), Offset(canvasSize.width, otherTop)))
+                return
+            }
+
+            null -> {}
+        }
+    }
+
 }

@@ -60,7 +60,8 @@ constructor(
                         newPosition,
                         itemSize = itemSize,
                         canvasSize = canvasSize,
-                        threshold = 10f
+                        threshold = 10f,
+                        allItems = state.value.selectedOverlays
                     )
 
                     newSnapLines = snappedResult.lines
