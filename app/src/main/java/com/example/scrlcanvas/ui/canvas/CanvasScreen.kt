@@ -1,5 +1,7 @@
 package com.example.scrlcanvas.ui.canvas
 
+import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.snap
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,6 +26,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -156,6 +159,12 @@ private fun DraggableOverlayItem(
         Size(imageWith.toPx(), imageHeight.toPx())
     }
 
+    val targetOffset = placedItem.position
+    val animatedOffset by animateOffsetAsState(
+        targetValue = targetOffset,
+        animationSpec = snap()
+    )
+
     AsyncImage(
         model = placedItem.overlay.source_url,
         contentDescription = placedItem.overlay.overlay_name,
@@ -164,8 +173,8 @@ private fun DraggableOverlayItem(
             .size(imageWith, imageHeight)
             .offset {
                 IntOffset(
-                    placedItem.position.x.roundToInt(),
-                    placedItem.position.y.roundToInt()
+                    animatedOffset.x.roundToInt(),
+                    animatedOffset.y.roundToInt()
                 )
             }
             .pointerInput(placedItem.overlay.id to placedItem.isSelected) {
