@@ -1,5 +1,6 @@
 package com.example.scrlcanvas.ui.canvas.viewmodel
 
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.scrlcanvas.data.model.OverlayCategory
@@ -31,6 +32,25 @@ constructor(
             is CanvasUiEvent.OnOverlaySelected -> addOverlayToCanvas(event.overlay)
             is CanvasUiEvent.OnCanvasOverlayTapped -> handleOverlyTapped(event.id)
             is CanvasUiEvent.OnDeselectCanvasOverlays -> handleDeselectOverlays()
+            is CanvasUiEvent.OnCanvasOverlayPositionChange -> handleCanvasOverlayPositionChange(
+                event.id,
+                event.dragAmount
+            )
+        }
+    }
+
+    private fun handleCanvasOverlayPositionChange(
+        id: Int,
+        dragAmount: Offset
+    ) {
+        _state.update {
+            it.copy(
+                selectedOverlays = it.selectedOverlays.map { item ->
+                    if (item.overlay.id == id) {
+                        item.copy(position = item.position + dragAmount)
+                    } else item
+                }
+            )
         }
     }
 

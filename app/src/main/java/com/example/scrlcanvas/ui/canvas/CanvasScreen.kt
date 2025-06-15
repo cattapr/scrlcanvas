@@ -3,6 +3,7 @@ package com.example.scrlcanvas.ui.canvas
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -26,14 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.scrlcanvas.ui.canvas.model.PlacedCanvasItem
 import com.example.scrlcanvas.ui.canvas.sheets.StickersSheet
 import com.example.scrlcanvas.ui.canvas.state.CanvasUiState
+import kotlin.math.roundToInt
 
 @Composable
-fun CanvasView(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
+fun CanvasScreen(state: CanvasUiState, onEvent: (CanvasUiEvent) -> Unit) {
     val canvasWidth = 800.dp
     val canvasHeight = 300.dp
     val scrollState = rememberScrollState()
@@ -117,6 +121,25 @@ private fun DraggableOverlayItem(
         contentDescription = placedItem.overlay.overlay_name,
         modifier = Modifier
             .size(imageSize)
+            .offset {
+                IntOffset(
+                    placedItem.position.x.roundToInt(),
+                    placedItem.position.y.roundToInt()
+                )
+            }
+            .pointerInput(placedItem.overlay.id) {
+                detectDragGestures(
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        onEvent(
+                            CanvasUiEvent.OnCanvasOverlayPositionChange(
+                                placedItem.overlay.id,
+                                dragAmount
+                            )
+                        )
+                    }
+                )
+            }
             .pointerInput(placedItem.overlay.id) {
                 detectTapGestures(
                     onTap = {
@@ -133,6 +156,6 @@ private fun DraggableOverlayItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun CanvasViewPreview() {
-    CanvasView(state = CanvasUiState()) {}
+private fun CanvasScreenPreview() {
+    CanvasScreen(state = CanvasUiState()) {}
 }

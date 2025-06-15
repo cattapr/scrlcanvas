@@ -13,7 +13,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import com.example.scrlcanvas.ui.canvas.CanvasView
+import com.example.scrlcanvas.ui.canvas.CanvasScreen
 import com.example.scrlcanvas.ui.canvas.state.CanvasUiState
 import com.example.scrlcanvas.ui.canvas.viewmodel.CanvasViewModel
 import com.example.scrlcanvas.ui.theme.ScrlcanvasTheme
@@ -38,7 +38,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ScrlcanvasTheme {
-                CanvasView(
+                CanvasScreen(
                     canvasUiState,
                     canvasViewModel::onEvent
                 )
@@ -51,6 +51,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     ScrlcanvasTheme {
-        CanvasView(CanvasUiState()) {}
+        CanvasScreen(CanvasUiState()) {}
     }
 }
